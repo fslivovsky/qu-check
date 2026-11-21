@@ -23,13 +23,19 @@ Requires [`elan`](https://github.com/leanprover/elan); `lake` fetches the
 toolchain pinned in `lean-toolchain` and the dependencies on the first build.
 
 ```bash
+git clone --recurse-submodules https://github.com/fslivovsky/qu-check.git
+cd qu-check
 lake build
 ```
 
+In an existing clone without the submodule, run
+`git submodule update --init` first.
+
 The QBF semantics and the soundness of universal reduction come from
 [fslivovsky/formalization](https://github.com/fslivovsky/formalization)
-(`QbfLean`). That project lists Mathlib as a dependency, so `lake` downloads
-it, but nothing from it is compiled.
+(`QbfLean`), which is included as the git submodule `formalization`. That
+project lists Mathlib as a dependency, so `lake` downloads it, but nothing from
+it is compiled.
 
 ## Usage
 

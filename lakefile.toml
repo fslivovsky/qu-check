@@ -5,11 +5,10 @@ defaultTargets = ["QlrupChecker", "qlrup-check"]
 [leanOptions]
 relaxedAutoImplicit = false
 
-# QBF semantics and the soundness of universal reduction.
+# QBF semantics and the soundness of universal reduction (a git submodule).
 [[require]]
 name = "qbf-lean"
-git = "https://github.com/fslivovsky/formalization"
-rev = "64a2b5b93a1761d69de83bfc4675386d43a46434"
+path = "formalization"
 
 [[lean_lib]]
 name = "QlrupChecker"
