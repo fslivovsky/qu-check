@@ -1,3 +1,0 @@
-[submodule "formalization"]
-	path = formalization
-	url = git@github.com:fslivovsky/formalization.git

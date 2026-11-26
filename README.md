@@ -23,19 +23,13 @@ Requires [`elan`](https://github.com/leanprover/elan); `lake` fetches the
 toolchain pinned in `lean-toolchain` and the dependencies on the first build.
 
 ```bash
-git clone --recurse-submodules https://github.com/fslivovsky/qu-check.git
+git clone https://github.com/fslivovsky/qu-check.git
 cd qu-check
 lake build
 ```
 
-In an existing clone without the submodule, run
-`git submodule update --init` first.
-
-The QBF semantics and the soundness of universal reduction come from
-[fslivovsky/formalization](https://github.com/fslivovsky/formalization)
-(`QbfLean`), which is included as the git submodule `formalization`. That
-project lists Mathlib as a dependency, so `lake` downloads it, but nothing from
-it is compiled.
+The project has no dependencies besides Lean core. The QBF semantics and the
+soundness of universal reduction are in `QbfLean/` (see below).
 
 ## Usage
 
@@ -97,7 +91,8 @@ constraints that are alive at the same time.
 - For the meaning of a result: the definitions in `QlrupChecker/Qcir.lean`
   (the QCIR parser, well-formedness, and semantics). This file is short and
   does not depend on the rest of the checker. It imports the definitions of
-  quantifier prefixes and assignments from `QbfLean`.
+  quantifier prefixes and assignments from `QbfLean/Syntax.lean` and
+  `QbfLean/Semantics.lean`.
 - For a theorem produced by `qlrup_true` or `qlrup_false`: additionally the
   Lean compiler (one `native_decide` axiom), and the reader that turns the proof
   file into steps, to the extent discussed in `Command.lean`. The reader is not
@@ -114,9 +109,11 @@ The solver, the trimmer, and the construction of the extended prefix
 
 | File | |
 |---|---|
+| `QbfLean/Syntax.lean`, `QbfLean/Semantics.lean` | **Trusted** (the parts used by `Qcir.lean`). Quantifier prefixes, assignments, and the semantics of a prefix (`evalPrefix`). |
+| `QbfLean/QRes.lean` | Q-resolution and the soundness of universal reduction (`Qbf.evalPrefix_reduce`). |
 | `Qcir.lean` | **Trusted.** Formulas, parser, semantics. |
 | `Tseitin.lean` | The Tseitin encoding `q.tseitin`. An *extended prefix* quantifies the variables of gates existentially, after the variables and gates they depend on. `tseitin_evalPrefix`: if `q` is true, so is its encoding under any extended prefix. |
-| `Derive.lean` | Resolution and universal reduction on sets of literals. Soundness of reduction is `Qbf.evalPrefix_reduce` from `QbfLean`. |
+| `Derive.lean` | Resolution and universal reduction on sets of literals. Soundness of reduction is `Qbf.evalPrefix_reduce` from `QbfLean/QRes.lean`. |
 | `Check.lean` | Checks for original clauses (a clause of the encoding, possibly with additional literals) and derived clauses (a chain of resolution steps on arbitrary pivots followed by reduction; if that fails, the chain is tried again with reduction after every step). Invariant: if the encoding is true under the extended prefix, then so is a CNF that implies it and all clauses derived so far. |
 | `Ext.lean` | Computes the extended prefix that places the variable of a gate right after the innermost quantifier block the gate depends on. The construction is not verified; instead `ctxOk` tests the result, and `ctxOk_sound` proves the test correct. |
 | `Run.lean` | The checker for a sequence of blocks of steps, and the main theorems. Terms are checked as clauses of the *dual* formula (quantifiers swapped, output negated): a term of `q` is the negation of a clause of `q.dual`, and `q` is true iff `q.dual` is false (`Qcir.dual_true`). |
