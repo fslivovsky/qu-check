@@ -49,11 +49,27 @@ def Assignment.set (σ : Assignment) (x : Var) (b : Bool) : Assignment :=
 /--
 Notation `σ[x ↦ b]` for `Assignment.set σ x b`.
 
-NOTE: `notation:max` declares new syntax at maximum precedence, so it binds tighter
-than anything else and needs no extra parentheses. Everything after `=>` is what the
-syntax expands to.
+NOTE: `syntax:max` declares new syntax at maximum precedence, so it binds tighter than
+anything else and needs no extra parentheses; `macro_rules` says what it expands to.
+`noWs` forbids whitespace before `[`, exactly like Lean's own `xs[i]` indexing. Without
+it, the parser would read `f xs []` or `f xs [1]` as the start of `xs[_ ↦ _]` and fail.
+It is `scoped`, so it is only available inside `namespace Qbf` or after `open Qbf`.
 -/
-notation:max σ "[" x " ↦ " b "]" => Assignment.set σ x b
+scoped syntax:max term noWs "[" term " ↦ " term "]" : term
+
+scoped macro_rules
+  | `($σ[$x ↦ $b]) => `(Assignment.set $σ $x $b)
+
+/-- Pretty-print `Assignment.set σ x b` back as `σ[x ↦ b]` in goals. -/
+@[scoped app_unexpander Assignment.set]
+def unexpandAssignmentSet : Lean.PrettyPrinter.Unexpander
+  | `($_ $σ $x $b) => `($σ[$x ↦ $b])
+  | _ => throw ()
+
+-- Regression check: a list literal after an application argument is not mistaken for
+-- the start of `σ[x ↦ b]`.
+example (xs : List Nat) : List.append xs [] = xs ∧ List.append xs [1] = xs ++ [1] :=
+  ⟨List.append_nil xs, rfl⟩
 
 @[simp] theorem Assignment.set_same (σ : Assignment) (x : Var) (b : Bool) :
     σ[x ↦ b] x = b := by
